@@ -16,6 +16,7 @@ const dataAlatTes = ref([])
 const dataSesi = ref([])
 const dataUser = ref(null)
 const dataJawaban = ref([])
+const totalScore = ref(0)
 const loadingGetAlatTesSesi = ref(false)
 const loadingGetUser = ref(false)
 const loadingGetJawaban = ref(false)
@@ -73,7 +74,9 @@ const handleGetJawaban = () => {
     selectedUser.value.value
   )
     .then((data) => {
-      dataJawaban.value = data
+      console.log(data)
+      dataJawaban.value = data.kelompokTes
+      totalScore.value = data.totalScore
     })
     .finally(() => {
       loadingGetJawaban.value = false
@@ -108,25 +111,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <widget-container
-    title="Pilih Sesi dan Alat Tes"
-    :loading="loadingGetAlatTesSesi || loadingGetUser"
-  >
+  <widget-container title="Pilih Sesi dan Alat Tes" :loading="loadingGetAlatTesSesi || loadingGetUser">
     <div class="flex items-center gap-3">
-      <psi-autocomplete
-        v-model="selectedSesi"
-        :items="dataSesi"
-        label="Sesi"
-        class="flex-1"
-        @update:model-value="handleGetUser()"
-      />
-      <psi-autocomplete
-        v-model="selectedAlatTes"
-        :items="dataAlatTes"
-        label="Alat tes"
-        class="flex-1"
-        @update:model-value="handleGetUser()"
-      />
+      <psi-autocomplete v-model="selectedSesi" :items="dataSesi" label="Sesi" class="flex-1"
+        @update:model-value="handleGetUser()" />
+      <psi-autocomplete v-model="selectedAlatTes" :items="dataAlatTes" label="Alat tes" class="flex-1"
+        @update:model-value="handleGetUser()" />
     </div>
     <p v-if="!dataUser?.length" class="mt-5 text-center text-red-700">
       {{
@@ -135,22 +125,13 @@ onMounted(() => {
           : 'Pilih Sesi dan Alat Tes'
       }}
     </p>
-    <psi-autocomplete
-      v-else
-      v-model="selectedUser"
-      :items="dataUser"
-      label="User"
-      class="mt-5 w-full"
-      @update:model-value="handleGetJawaban()"
-    />
+    <psi-autocomplete v-else v-model="selectedUser" :items="dataUser" label="User" class="mt-5 w-full"
+      @update:model-value="handleGetJawaban()" />
   </widget-container>
   <widget-container v-if="detailSelectedUser" title="Data Peserta">
     <table class="w-full table-auto border-collapse">
       <thead>
-        <tr
-          class="rounded-lg text-left text-sm font-medium text-gray-700"
-          style="font-size: 0.9674rem"
-        >
+        <tr class="rounded-lg text-left text-sm font-medium text-gray-700" style="font-size: 0.9674rem">
           <th class="bg-gray-200 px-4 py-2" style="background-color: #f8f8f8">
             Detail
           </th>
@@ -158,11 +139,8 @@ onMounted(() => {
         </tr>
       </thead>
       <tbody class="text-sm font-normal text-gray-700">
-        <tr
-          v-for="detail in detailSelectedUser"
-          :key="detail.key"
-          class="border-b border-gray-200 py-10 hover:bg-gray-100"
-        >
+        <tr v-for="detail in detailSelectedUser" :key="detail.key"
+          class="border-b border-gray-200 py-10 hover:bg-gray-100">
           <td class="px-4 py-4">{{ detail.key }}</td>
           <td class="px-4 py-4">{{ detail.value }}</td>
         </tr>
@@ -170,42 +148,36 @@ onMounted(() => {
     </table>
   </widget-container>
   <div v-if="loadingGetJawaban" class="flex items-center justify-center">
-    <loading-spinner
-      class="h-16 w-16 animate-spin fill-blue-100 text-blue-600"
-    />
+    <loading-spinner class="h-16 w-16 animate-spin fill-blue-100 text-blue-600" />
   </div>
   <template v-else-if="dataJawaban.length">
     <h2 class="text-center text-4xl font-bold">Jawaban Peserta</h2>
-    <widget-container
-      v-for="(kelompokTes, i) in dataJawaban"
-      :key="'kelompok-tes-' + i"
-      :title="kelompokTes.nama"
-    >
+    <p class="text-center text-xl">Total Skor: {{ totalScore }}</p>
+    <widget-container v-for="(kelompokTes, i) in dataJawaban" :key="'kelompok-tes-' + i" :title="kelompokTes.nama">
       <template #cta>
         <psi-button @click="handleCopyToClipboard(i)">Copy Jawaban</psi-button>
       </template>
+      <p class="text-center text-xl mb-3">Skor: {{ kelompokTes.score }}</p>
       <table class="w-full table-auto border-collapse">
         <thead>
-          <tr
-            class="rounded-lg text-left text-sm font-medium text-gray-700"
-            style="font-size: 0.9674rem"
-          >
+          <tr class="rounded-lg text-left text-sm font-medium text-gray-700" style="font-size: 0.9674rem">
             <th class="bg-gray-200 px-4 py-2" style="background-color: #f8f8f8">
               {{ kelompokTes.jenis_soal_kelompok ? 'Kelompok' : 'Nomor' }}
             </th>
             <th class="px-4 py-2" style="background-color: #f8f8f8">
               {{ kelompokTes.jenis_soal_kelompok ? 'Jumlah' : 'Jawaban' }}
             </th>
+            <th v-if="!kelompokTes.jenis_soal_kelompok" class="px-4 py-2" style="background-color: #f8f8f8">
+              Skor
+            </th>
           </tr>
         </thead>
         <tbody class="text-sm font-normal text-gray-700">
-          <tr
-            v-for="(soal, j) in kelompokTes.soal"
-            :key="'soal-' + j"
-            class="border-b border-gray-200 py-10 hover:bg-gray-100"
-          >
+          <tr v-for="(soal, j) in kelompokTes.soal" :key="'soal-' + j"
+            class="border-b border-gray-200 py-10 hover:bg-gray-100">
             <td class="px-4 py-4">{{ soal.nomor }}</td>
             <td class="px-4 py-4">{{ soal.jawaban }}</td>
+            <td v-if="!kelompokTes.jenis_soal_kelompok" class="px-4 py-4">{{ soal.score }}</td>
           </tr>
         </tbody>
       </table>

@@ -77,27 +77,32 @@ const addNewSoal = () => {
       {
         teks: '',
         value: 'A',
-        type: 'text'
+        type: 'text',
+        score: '0'
       },
       {
         teks: '',
         value: 'B',
-        type: 'text'
+        type: 'text',
+        score: '0'
       },
       {
         teks: '',
         value: 'C',
-        type: 'text'
+        type: 'text',
+        score: '0'
       },
       {
         teks: '',
         value: 'D',
-        type: 'text'
+        type: 'text',
+        score: '0'
       },
       {
         teks: '',
         value: 'E',
-        type: 'text'
+        type: 'text',
+        score: '0'
       },
     ]
   })
@@ -114,11 +119,12 @@ const addNewOpsi = (soal_index) => {
       {
         teks: '',
         value: '',
-        type: 'text'
+        type: 'text',
+        score: '0'
       }
     ]
   } else {
-    soalData.value[soal_index].opsi_soal.push({ teks: '', value: '', type: '' })
+    soalData.value[soal_index].opsi_soal.push({ teks: '', value: '', type: '', score: '0' })
   }
 }
 const removeOpsi = (soal_index, opsi_index) => {
@@ -279,6 +285,7 @@ onMounted(() => {
                 <div v-for="(opsi, j) in soal.opsi_soal" :key="`${soal.id}-opsi-${j}`">
                   <div class="flex items-center gap-2 mb-2">
                     <form-input v-model="opsi.value" label="Opsi" />
+                    <form-input v-model="opsi.score" label="Skor" type="number" />
                     <psi-button variant="red-outline" @click="removeOpsi(i, j)"><trash-icon
                         class="h-5 w-5" /></psi-button>
                     <psi-button v-if="opsi.type === 'text'" @click="changeOpsiType(i, j, 'image')"><photograph-icon

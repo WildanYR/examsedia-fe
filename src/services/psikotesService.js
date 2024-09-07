@@ -99,12 +99,14 @@ export const getJawabanUserPsikotes = async (sesi_id, alat_tes_id, user_id) => {
       })
     }
     let kelompokTes = []
+    let total_score = 0
     for (const keltes of kelompokTesData) {
       const jenis_soal_kelompok = keltes.soal[0].jenis_soal === 'kelompok'
       const kelompokDetail = {
         nama: keltes.nama,
         soal: [],
-        jenis_soal_kelompok
+        jenis_soal_kelompok,
+        score: 0
       }
       if (jenis_soal_kelompok) {
         let jenisSoalKelompok = []
@@ -130,10 +132,17 @@ export const getJawabanUserPsikotes = async (sesi_id, alat_tes_id, user_id) => {
         kelompokDetail.soal = jenisSoalKelompok
       } else {
         for (const soal of keltes.soal) {
-          const soalDetail = { nomor: soal.nomor, jawaban: '' }
+          const soalDetail = { nomor: soal.nomor, jawaban: '', score: 0 }
           for (const jawaban of jawabanUser) {
             if (soal.id === jawaban.id) {
               soalDetail.jawaban = jawaban.jawaban
+            }
+          }
+          for (const opsi of soal.opsi) {
+            if (soalDetail.jawaban === opsi.value) {
+              soalDetail.score = opsi.score
+              kelompokDetail.score += opsi.score
+              total_score += opsi.score
             }
           }
           kelompokDetail.soal.push(soalDetail)
@@ -141,7 +150,7 @@ export const getJawabanUserPsikotes = async (sesi_id, alat_tes_id, user_id) => {
       }
       kelompokTes.push(kelompokDetail)
     }
-    return kelompokTes
+    return {kelompokTes, totalScore: total_score}
   } catch (error) {
     throw errorHandler(error)
   }

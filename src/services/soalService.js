@@ -20,7 +20,8 @@ export const getKelompokTesSoal = async (id) => {
           return {
             value: opsiObj[0],
             type: opsiObj[1],
-            teks: opsiObj[2]
+            teks: opsiObj[2],
+            score: opsiObj[3] || '0',
           }
         })
       }
@@ -33,7 +34,10 @@ export const getKelompokTesSoal = async (id) => {
 }
 
 const opsiToString = (opsi) => {
-  return opsi.map((op) => `${op.value};-;${op.type};-;${op.teks}`).join(';=;')
+  return opsi.map((op) => {
+    const score = op.score ? op.score : '0'
+    return `${op.value};-;${op.type};-;${op.teks};-;${score}`
+  }).join(';=;')
 }
 export const mutateSoal = async (soals) => {
   let mutateData = {
@@ -50,6 +54,7 @@ export const mutateSoal = async (soals) => {
       soal.opsi_soal
     ) {
       opsi_soal = opsiToString(soal.opsi_soal)
+      
     }
     // insert soal
     if (!soal.signature) {
